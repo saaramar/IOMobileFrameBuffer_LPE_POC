@@ -140,7 +140,7 @@ FFFFFFF00970AE00 BL              IOSurfaceRoot::copyPortNameForSurfaceInTask(tas
 
 A very important question is: how can we trigger this flow? Clearly, simply calling the external method 83 will do the job (and we can obtain the userclient to *AppleCLCD/IMOFB* from the app sandbox). However - there is a check for the *com.apple.private.allow-explicit-graphics-priority* entitlement. The app sandbox does not have this entitlement, but WebKit.WebContent does! And we can clearly obtain the required userclient from this context. So what we have here is an LPE vulnerability, triggerable from the WebContent directly (WebContent -> EL1).
 
-Now, let's build the POC. As I showed in *description_and_poc.txt*, the POC can't be any simpler. All we need to do is to obtain the userclient to *AppleCLCD/IOMobileFramBuffer* and call *IOConnectCallMethod* with selector=83, and set the scalar input to be some arbitrarily large number.
+Now, let's build the POC. As I showed in [description_and_poc.txt](https://github.com/saaramar/IOMobileFrameBuffer_LPE_POC/blob/main/files/description_and_poc.txt), the POC can't be any simpler. All we need to do is to obtain the userclient to *AppleCLCD/IOMobileFramBuffer* and call *IOConnectCallMethod* with selector=83, and set the scalar input to be some arbitrarily large number.
 
 We also need to take care of the required entitlement. We have two options:
 
