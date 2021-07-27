@@ -373,6 +373,8 @@ I hope you enjoyed reading this blogpost and that I managed to shed some light o
 
 Finally, I want to thank (again) for the two outstanding projects, [checkra1n](https://checkra.in/) and [Corellium](https://twitter.com/AmarSaar/status/1376330319582920711). I already talked a lot about how *checkra1n* was a crazy game changer for our community, but I want to mention here Corellium as well. I started to use Corellium the day they opened their product to private users, and I'm still feeling this product changed my day-to-day life regarding iOS security research. Thanks again for Corellium for their fantastic product (and the quick and informative responses!).
 
+The POC can be found in the [repo](https://github.com/saaramar/IOMobileFrameBuffer_LPE_POC).
+
 Thanks,
 
 Saar Amar
