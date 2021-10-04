@@ -201,7 +201,8 @@ Let's make sure the instruction that triggered this panic is the one we expect. 
 FFFFFFF0085852B0 LDR             X10, [X10,X11,LSL#3]
 ```
 
-Great! Indeed, we have a panic on the access to the array with our controlled scalar as an index. It also would be really cool to test it on Corellium (this product is fantastic) and see that we get the exact same [panic](https://github.com/saaramar/IOMobileFrameBuffer_LPE_POC/blob/main/files/Corellium_poc.png).
+Great! Indeed, we have a panic on the access to the array with our controlled scalar as an index. It also would be really cool to test it on Corellium (this product is fantastic) and see that we get the exact same panic:
+![image](https://github.com/saaramar/IOMobileFrameBuffer_LPE_POC/raw/main/files/Corellium_poc.png)
 
 ## Exploit
 
